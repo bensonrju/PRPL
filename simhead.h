@@ -5,6 +5,8 @@
 // Our custom packet library
 #include "simpack.h"
 
+#include <stdio.h>
+
 // Comment #define directive below to 
 //  disable debug messages to the console
 // #define DEBUG_MSG

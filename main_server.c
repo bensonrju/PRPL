@@ -15,23 +15,15 @@
 
  main_server.c (main program)
    |- simhead.h (addr/port, debug flags)
+		|- stdio.h
+        |- simpack.h (defines packet structure)
         |- simsocket.h (functions to set up sockets)
-        |    |- stdio.h
         |    |- stdlib.h
-        |    |- stdint.h
         |    |- string.h
-        |    |- math.h
-        |    |- sys/types.h
         |    |- sys/socket.h
         |    |- netinet/in.h
         |    |- netinet/ip.h
         |    |- arpa/inet.h
-        |- simpack.h (defines packet structure)
-             |- stdio.h
-             |- stdlib.h
-             |- stdint.h
-             |- string.h
-             |- sys/types.h
  */
 
 #include "simhead.h"

@@ -15,25 +15,18 @@
  Code library structure:
 
  main_client.c (main program)
-   |- client.h (file path, functions)
+   	|- client.h (file path, functions)
+		|- unistd.h (getopt for CLI arguments)
         |- simhead.h (addr/port, debug flags)
-             |- simsocket.h (functions to set up sockets)
-             |    |- stdio.h
-             |    |- stdlib.h
-             |    |- stdint.h
-             |    |- string.h
-             |    |- math.h
-             |    |- sys/types.h
-             |    |- sys/socket.h
-             |    |- netinet/in.h
-             |    |- netinet/ip.h
-             |    |- arpa/inet.h
-    	     |- simpack.h (defines packet structure)
-                  |- stdio.h
-                  |- stdlib.h
-                  |- stdint.h
-                  |- string.h
-                  |- sys/types.h
+			|- stdio.h
+        	|- simpack.h (defines packet structure)
+        	|- simsocket.h (functions to set up sockets)
+        	|    |- stdlib.h
+        	|    |- string.h
+        	|    |- sys/socket.h
+        	|    |- netinet/in.h
+        	|    |- netinet/ip.h
+        	|    |- arpa/inet.h
  */
 
 #include "client.h"

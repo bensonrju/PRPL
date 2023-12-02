@@ -1,14 +1,8 @@
-// Important standard libraries for 
-//  both client and server so they are 
-//  included here for the sake of simplicity
-#include <stdio.h>
 #include <stdlib.h>
-#include <stdint.h>
 #include <string.h>
-#include <math.h>
 
 // Libraries needed for socket I/O
-#include <sys/types.h>
+//#include <sys/types.h>
 #include <sys/socket.h>
 #include <netinet/in.h>
 #include <netinet/ip.h>

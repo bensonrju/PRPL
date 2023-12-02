@@ -1,11 +1,5 @@
 #pragma once
 
-#include <stdio.h>
-#include <stdlib.h>
-#include <stdint.h>
-#include <string.h>
-
-#include <sys/types.h>
 
 #define PAYLOAD_SIZE 1024
 
