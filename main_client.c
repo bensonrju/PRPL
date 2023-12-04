@@ -46,17 +46,22 @@ int main(int argc, char **argv)
 
 	// Check if the program should use a different
 	//  input file other than the default
-	int termOpt = getopt(argc, argv, "f:");
+	int termOpt; // = getopt(argc, argv, "f:");
 
-	if (termOpt == 'f')
-	{
-#ifdef DEBUG_MSG
-		printf("Ignoring default file. Using %s instead. \n", optarg);
-#endif
+	while((termOpt = getopt(argc, argv, "f:i:")) != -1) {
+		if(termOpt == 'f') {
+			#ifdef DEBUG_MSG
+			printf("Ignoring default file. Using %s instead. \n", optarg);
+			#endif
 
-		filePath = optarg;
+			filePath = optarg;
+		} else if (termOpt == 'i') {
+			server_ip_addr = optarg;
+			#ifdef DEBUG_MSG
+			printf("Using IP address %s instead of default. \n", optarg);
+			#endif
+		}
 	}
-
 	// Call the packing function to create
 	//  the packets we intend to send
 	unsigned int num_packets = pack_packets(filePath, &pkt_arr);
