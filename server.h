@@ -1,8 +1,8 @@
-// Includes shared between the
-//  client and server
-#include "simhead.h"
+// The socket libraries we use
+#include "simsocket.h"
 
-char* filePath = "output.jpg";
+// Our custom packet library
+#include "simpack.h"
 
 
 #define DEBUG_MSG

@@ -17,5 +17,4 @@
 const int port_no = 12345;
 
 // IP address that the client directs the message to
-const char* server_ip_addr = "127.0.0.1";
-//const char* server_ip_addr = "172.21.16.1"; //"192.168.1.4";
+const char server_ip_addr[] = "127.0.0.1";
