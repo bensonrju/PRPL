@@ -53,3 +53,7 @@ dkms.conf
 
 # Test Input Files
 inputFile.txt
+
+# project executables
+bin_client
+bin_server

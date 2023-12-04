@@ -7,7 +7,7 @@
  * Nolan Adams
  * 
  * created 2023-11-07
- * updated 2023-11-28
+ * updated 2023-12-03
  */
 
  /*
@@ -27,10 +27,17 @@
  */
 
 #include "simhead.h"
+#include <unistd.h>
 
 // char output_file_path[] = "output.jpg";
 
 int status = 0;
+
+struct ack_packet_s {
+    int sequence_num;
+};
+
+struct ack_packet_s ack_packet_send;
 
 // holds packet being received
 packet_s recv_pkt;
@@ -48,11 +55,12 @@ int main(int argc, char** argv) {
 	
 	// define server address using sockaddr_in data structure
 	struct sockaddr_in server_addr;
+	socklen_t server_addr_size = sizeof(server_addr);
 
 	// define client address using sockaddr_in data structure
 	// (we need the client's info to send ACKs)
 	struct sockaddr_in client_addr = {0};
-	unsigned int client_addrlen = sizeof(client_addr);
+	socklen_t client_addrlen = sizeof(client_addr);
 
 	// Call the server-side server address definer function
 	def_srv_addr_serverSide(&server_addr, port_no);
@@ -75,15 +83,16 @@ int main(int argc, char** argv) {
 	#endif
 
 	// receiving packets loop
-	while (1) {
+    int all_packets_recv = 0;
+	while (!all_packets_recv) {
 		// receive packet (blocking)
-		int msg_size = recvfrom(server_sfd, // int sockfd
-						        &recv_pkt, // void *buf
-						        sizeof(recv_pkt), // size_t len
-								0, // int flags
-								(struct sockaddr*)&client_addr, // struct sockaddr *src_addr
-						        &client_addrlen // socklen_t *addrlen
-								);
+        int msg_size = recvfrom(server_sfd, // int sockfd
+                                &recv_pkt, // void *buf
+                                sizeof(recv_pkt), // size_t len
+                                0, // int flags
+                                (struct sockaddr*)&client_addr, // struct sockaddr *src_addr
+                                &client_addrlen // socklen_t *addrlen
+                                );
 		
 		// error handling
 		if (msg_size < 0) {
@@ -118,13 +127,36 @@ int main(int argc, char** argv) {
 		*/
 		#endif
 
+		// If we received a valid message, we should acknowledge it
+		if (msg_size > 0) {
+			#ifdef DEBUG_MSG
+            printf("[server] frame received: %d\n", recv_pkt.index);
+			#endif
+
+            ack_packet_send.sequence_num = recv_pkt.index;
+
+            // send ack
+            // note: gets sent to 'client_addr' not 'server_addr',
+            //       'client_addr' is the source address (i.e. return address) we got from the recvfrom() function
+            sendto(server_sfd, &ack_packet_send, sizeof(ack_packet_send), 0, (struct sockaddr*)&client_addr, client_addrlen);
+
+			#ifdef DEBUG_MSG
+            printf("[server] ack sent (%d)\n", ack_sequence_number);
+			#endif
+        }
+        
+        else {
+            printf("[server] frame not received\n");
+        }
+
 		// check if final packet was received
 		if (recv_pkt.incoming == 0) {
-			printf("\n[server] finished receiving all packets\n");
-			break;
-		}
+            printf("[server] finished receiving all packets\n");
+            all_packets_recv = 1;
+        }
 	}
 	
-	return 0;
+	close(server_sfd);
+    return 0;
 
 }
