@@ -33,6 +33,8 @@ char output_file_path[] = "output.jpg";
 
 int status = 0;
 int count = 0;
+int tot_pkts = 0;
+
 
 struct ack_packet_s
 {
@@ -157,27 +159,29 @@ int main(int argc, char **argv)
 
 		// If we received a valid message, we should acknowledge it
 		if (msg_size > 0) {
-		#ifdef DEBUG_MSG
-			printf("[server] frame received: %d\n", recv_pkt.index);
-		#endif
+			#ifdef DEBUG_MSG
+				printf("[server] frame received: %d\n", 
+							recv_pkt.index);
+			#endif
 
-		ack_packet_send.sequence_num = recv_pkt.index;
+			ack_packet_send.sequence_num = recv_pkt.index;
 
-		// send ack
-		// note: gets sent to 'client_addr' not 'server_addr',
-		//       'client_addr' is the source address (i.e. return address) we got from the recvfrom() function
-		sendto( server_sfd, &ack_packet_send, 
-			sizeof(ack_packet_send), 0, 
-			(struct sockaddr *)&client_addr, 
-			client_addrlen
-		);
+			// send ack
+			// note: gets sent to 'client_addr' not 'server_addr',
+			//       'client_addr' is the source address (i.e. return address) we got from the recvfrom() function
+			sendto( server_sfd, &ack_packet_send, 
+				sizeof(ack_packet_send), 0, 
+				(struct sockaddr *)&client_addr, 
+				client_addrlen
+			);
 
-		#ifdef DEBUG_MSG
-			printf("[server] ack sent (%d)\n", 
-					ack_packet_send.sequence_num);
-		#endif
+			#ifdef DEBUG_MSG
+				printf("[server] ack sent (%d)\n", 
+						ack_packet_send.sequence_num);
+			#endif
 
-		count++;
+			count++;
+			
 		} else {
 			printf("[server] frame not received\n"); 
 		}
@@ -194,7 +198,7 @@ int main(int argc, char **argv)
 	FILE *fp;
 
 	// Open the target file
-	fp = fopen(output_file_path, "w");
+	fp = fopen(output_file_path, "wb");
 	if (fp == NULL) {
 		printf("ERROR: Could not open file. \n");
 		return 0;
@@ -207,7 +211,11 @@ int main(int argc, char **argv)
 	// printf("[DEBUGGING]:\"%s\"\t", buffer);
 
 	// Place buffer into output file
-	fprintf(fp,"%s",buffer);
+	//fprintf(fp,"%s",buffer);
+	int num_bytes = ((recv_pkt.tot_pkts - 1) * PAYLOAD_SIZE)
+					+ extra;
+
+	fwrite(buffer, sizeof(uint8_t), num_bytes, fp);
 
 	fclose(fp);
 

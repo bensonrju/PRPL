@@ -63,8 +63,7 @@ unsigned int pack_packets(
 
     // Open the target file
     fptr = fopen(filePath, "r");
-    if (fptr == NULL)
-    {
+    if (fptr == NULL) {
         printf("ERROR: Could not open file. \n");
         return 0;
     }
@@ -74,7 +73,8 @@ unsigned int pack_packets(
 
     // Calculate the number of packets needed
     //  to transmit the file's contents
-    num_packets = file_size / PAYLOAD_SIZE + (file_size % PAYLOAD_SIZE != 0);
+    num_packets = file_size / PAYLOAD_SIZE + 
+                (file_size % PAYLOAD_SIZE != 0);
 
     // Create the array of packets large enough to hold
     //  all the data in the input file
@@ -83,21 +83,20 @@ unsigned int pack_packets(
     // Temporary variable to make accessing packets easier
     packet_s *pkt_arr = *pkt_ptr;
 
-#ifdef DEBUG_PACKING
-    printf("File size: %u \t Expected packets: %u \n",
-           file_size, num_packets);
-#endif
+    #ifdef DEBUG_PACKING
+        printf("File size: %u \t Expected packets: %u \n",
+            file_size, num_packets);
+    #endif
 
     // Beginning with the first packet, pack the data from the file
     //  into the payload until it is completely full and then
     //  continue where it left off in the next packet
-    for (pkt_idx = 0; pkt_idx < (num_packets - 1); pkt_idx++)
-    {
+    for (pkt_idx = 0; pkt_idx < (num_packets - 1); pkt_idx++) {
         itr = 0;
 
-#ifdef DEBUG_PACKING
-        printf("\nIndex: ");
-#endif
+        #ifdef DEBUG_PACKING
+            printf("\nIndex: ");
+        #endif
 
         // Read the next payload worth of bytes and then store
         //  that data into the payload of the current packet
@@ -117,34 +116,32 @@ unsigned int pack_packets(
         //  indicating how many packets in total there are
         pkt_arr[pkt_idx].tot_pkts = num_packets;
 
-#ifdef DEBUG_PACKING
-        printf("%u Done. \n", itr);
-#endif
+        #ifdef DEBUG_PACKING
+            printf("%u Done. \n", itr);
+        #endif
     }
 
     itr = 0;
 
-#ifdef DEBUG_PACKING2
-    printf("Packing last packet... ");
-#endif
+    #ifdef DEBUG_PACKING2
+        printf("Packing last packet... ");
+    #endif
 
     // For the last packet, iterate over each byte
     //  of the last few bytes of the file
-    while (fread(&pkt_arr[pkt_idx].payload[itr], BYTE_SIZE, 1, fptr))
-    {
+    while (fread(&pkt_arr[pkt_idx].payload[itr], BYTE_SIZE, 1, fptr)) {
         itr++;
 
-#ifdef DEBUG_PACKING2
-        if (itr % 32 == 0)
-        {
-            printf("%u ", itr);
-        }
-#endif
+        #ifdef DEBUG_PACKING2
+            if (itr % 32 == 0) {
+                printf("%u ", itr);
+            }
+        #endif
     }
 
-#ifdef DEBUG_PACKING2
-    printf("%u Done. \n", itr);
-#endif
+    #ifdef DEBUG_PACKING2
+        printf("%u Done. \n", itr);
+    #endif
 
     // Make sure to set the index of the last packet
     pkt_arr[pkt_idx].index = pkt_idx;
