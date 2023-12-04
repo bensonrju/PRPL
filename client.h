@@ -64,7 +64,7 @@ unsigned int pack_packets(
     // Open the target file
     fptr = fopen(filePath, "r");
     if (fptr == NULL) {
-        printf("ERROR: Could not open file. \n");
+        printf("ERROR: Could not open file: %s \n", filePath);
         return 0;
     }
 

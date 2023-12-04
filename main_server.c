@@ -26,7 +26,7 @@ main_server.c (main program)
 	   |    |- arpa/inet.h
 */
 
-#include "simhead.h"
+#include "server.h"
 #include <unistd.h>
 
 char output_file_path[] = "output.jpg";
@@ -113,12 +113,11 @@ int main(int argc, char **argv)
 
 		// TODO: recv_pkt -> go to -> buffer
 		for (int i = 0; i < recv_pkt.payload_len; i++) {
-			// printf("[DEBUGGING]%d - recv_pkt: %x\n",buf_index, recv_pkt.payload[i]);
+			// printf("[DEBUGGING]%d - recv_pkt: %x\n",
+			//			buf_index, recv_pkt.payload[i]);
 			buffer[buf_index] = recv_pkt.payload[i];
 			buf_index++;
 		}
-		// buf_index++;
-		// buffer[buf_index] = (uint16_t)recv_pkt.payload;
 		// printf("[DEBUGGING] buf: %s\n\n", buffer);
 
 		// error handling
@@ -181,7 +180,7 @@ int main(int argc, char **argv)
 			#endif
 
 			count++;
-			
+
 		} else {
 			printf("[server] frame not received\n"); 
 		}
@@ -211,7 +210,6 @@ int main(int argc, char **argv)
 	// printf("[DEBUGGING]:\"%s\"\t", buffer);
 
 	// Place buffer into output file
-	//fprintf(fp,"%s",buffer);
 	int num_bytes = ((recv_pkt.tot_pkts - 1) * PAYLOAD_SIZE)
 					+ extra;
 
