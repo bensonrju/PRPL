@@ -75,43 +75,42 @@ int main(int argc, char **argv)
 					 sizeof(server_addr));
 
 	// Error handling
-	if (sock_bind != 0)
-	{
+	if (sock_bind != 0) {
 		perror("[server] bind() error:");
 		exit(1);
 	}
 
 // Debug message for listening
-#ifdef DEBUG_MSG
+	#ifdef DEBUG_MSG
 	printf("[server] waiting for message\n");
-#endif
+	#endif
 
 	int buf_index = 0;
 	uint8_t *buffer;
 
 	// receiving packets loop
 	int all_packets_recv = 0;
-	while (!all_packets_recv)
-	{
+	while (!all_packets_recv) {
 		// receive packet (blocking)
-		int msg_size = recvfrom(server_sfd,						 // int sockfd
-								&recv_pkt,						 // void *buf
-								sizeof(recv_pkt),				 // size_t len
-								0,								 // int flags
-								(struct sockaddr *)&client_addr, // struct sockaddr *src_addr
-								&client_addrlen					 // socklen_t *addrlen
-		);
+		int msg_size = 
+			recvfrom(server_sfd,		// int sockfd
+					&recv_pkt,			// void *buf
+					sizeof(recv_pkt),	// size_t len
+					0,					// int flags
+					// struct sockaddr *src_addr
+					(struct sockaddr *)&client_addr, 
+					&client_addrlen		// socklen_t *addrlen
+					);
 
 		// TODO: use total msg size to set buffer size
-		if (count == 0)
-		{
+		if (count == 0) {
 			buffer = (uint8_t *)malloc(recv_pkt.tot_pkts * PAYLOAD_SIZE);
-			printf("[DEBUGGING] buffer size: %d\n", recv_pkt.tot_pkts * PAYLOAD_SIZE);
+			printf("[DEBUGGING] buffer size: %d\n", 
+					recv_pkt.tot_pkts * PAYLOAD_SIZE);
 		}
 
 		// TODO: recv_pkt -> go to -> buffer
-		for (int i = 0; i < recv_pkt.payload_len; i++)
-		{
+		for (int i = 0; i < recv_pkt.payload_len; i++) {
 			// printf("[DEBUGGING]%d - recv_pkt: %x\n",buf_index, recv_pkt.payload[i]);
 			buffer[buf_index] = recv_pkt.payload[i];
 			buf_index++;
@@ -121,72 +120,72 @@ int main(int argc, char **argv)
 		// printf("[DEBUGGING] buf: %s\n\n", buffer);
 
 		// error handling
-		if (msg_size < 0)
-		{
+		if (msg_size < 0) {
 			perror("[server] recvfrom()");
 			exit(1);
 		}
 
-#ifdef DEBUG_UNPACK_ABR
-		if (!status)
-		{
-			printf("[server] Receiving packets... ");
-			status = 1;
-		}
-		else
-		{
-			printf("%d ", recv_pkt.index);
-		}
-#endif
+		#ifdef DEBUG_UNPACK_ABR
+			if (!status) {
+				printf("[server] Receiving packets... ");
+				status = 1;
+			} else { 
+				printf("%d ", recv_pkt.index); 
+			}
+		#endif
 
-// debug info: show received string
-#ifdef DEBUG_MSG
-		printf("[server] received packet %d from %s:%d :: \"%s\"\n",
+		// debug info: show received string
+		#ifdef DEBUG_MSG
+			printf("[server] received packet %d from %s:%d :: \"%s\"\n",
 			   recv_pkt.index, inet_ntoa(client_addr.sin_addr),
 			   ntohs(client_addr.sin_port), recv_pkt.payload);
-/*
-received message's source ip address and port numbers:
-	- raw ip:   client_addr.sin_addr
-	- raw port: client_addr.sin_port
+		/*
+		received message's source ip address and port numbers:
+		- raw ip:   client_addr.sin_addr
+		- raw port: client_addr.sin_port
 
-converted to readable formats for printf():
-	- ip (string): inet_ntoa(client_addr.sin_addr)
-	- port (int):  ntohs(client_addr.sin_port)
+		converted to readable formats for printf():
+		- ip (string): inet_ntoa(client_addr.sin_addr)
+		- port (int):  ntohs(client_addr.sin_port)
 
-note: source port number will probably be different from destination port number
-	  if both server and client are running on the same machine
-*/
-#endif
+		note: source port number will probably be 
+			different from destination port number
+	  		if both server and client are 
+			running on the same machine
+		*/
+		#endif
 
 		// If we received a valid message, we should acknowledge it
-		if (msg_size > 0)
-		{
-#ifdef DEBUG_MSG
+		if (msg_size > 0) {
+		#ifdef DEBUG_MSG
 			printf("[server] frame received: %d\n", recv_pkt.index);
-#endif
+		#endif
 
-			ack_packet_send.sequence_num = recv_pkt.index;
+		ack_packet_send.sequence_num = recv_pkt.index;
 
-			// send ack
-			// note: gets sent to 'client_addr' not 'server_addr',
-			//       'client_addr' is the source address (i.e. return address) we got from the recvfrom() function
-			sendto(server_sfd, &ack_packet_send, sizeof(ack_packet_send), 0, (struct sockaddr *)&client_addr, client_addrlen);
+		// send ack
+		// note: gets sent to 'client_addr' not 'server_addr',
+		//       'client_addr' is the source address (i.e. return address) we got from the recvfrom() function
+		sendto( server_sfd, &ack_packet_send, 
+			sizeof(ack_packet_send), 0, 
+			(struct sockaddr *)&client_addr, 
+			client_addrlen
+		);
 
-#ifdef DEBUG_MSG
-			printf("[server] ack sent (%d)\n", ack_packet_send.sequence_num);
-#endif
-			count++;
-		}
+		#ifdef DEBUG_MSG
+			printf("[server] ack sent (%d)\n", 
+					ack_packet_send.sequence_num);
+		#endif
 
-		else
-		{
-			printf("[server] frame not received\n");
+		count++;
+		} else {
+			printf("[server] frame not received\n"); 
 		}
 
 		// check if final packet was received
-		if (ack_packet_send.sequence_num == recv_pkt.tot_pkts - 1 && count == recv_pkt.tot_pkts)
-		{
-			printf("[server] finished receiving all packets\n");
+		if (ack_packet_send.sequence_num == recv_pkt.tot_pkts - 1 
+				&& count == recv_pkt.tot_pkts) {
+			printf("\n[server] finished receiving all packets\n");
 			all_packets_recv = 1;
 		}
 	}
@@ -196,8 +195,7 @@ note: source port number will probably be different from destination port number
 
 	// Open the target file
 	fp = fopen(output_file_path, "w");
-	if (fp == NULL)
-	{
+	if (fp == NULL) {
 		printf("ERROR: Could not open file. \n");
 		return 0;
 	}
