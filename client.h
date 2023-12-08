@@ -16,6 +16,8 @@ char *filePath = "";
 //  to read from the input file at once
 #define BYTE_SIZE sizeof(uint8_t)
 
+
+
 unsigned int packet_size = sizeof(packet_s);
 
 /*

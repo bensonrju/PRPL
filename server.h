@@ -1,8 +1,6 @@
-// The socket libraries we use
-#include "simsocket.h"
-
-// Our custom packet library
-#include "simpack.h"
+// Includes shared between the
+//  client and server
+#include "simhead.h"
 
 
 #define DEBUG_MSG

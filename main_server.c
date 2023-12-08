@@ -28,6 +28,11 @@ main_server.c (main program)
 
 #include "simhead.h"
 #include <unistd.h>
+//#include <time.h>
+
+//#define DEBUG_MSG_F
+
+#define DEBUG_MSG
 
 char output_file_path[] = "output.jpg";
 
@@ -35,13 +40,16 @@ int status = 0;
 int count = 0;
 int tot_pkts = 0;
 
-
+/*
 struct ack_packet_s
 {
 	int sequence_num;
 };
+*/
 
 struct ack_packet_s ack_packet_send;
+
+socket_s pSocket;
 
 // holds packet being received
 packet_s recv_pkt;
@@ -55,8 +63,8 @@ int main(int argc, char **argv)
 	// create socket using:
 	//   AF_INET (IPv4)
 	//   SOCK_DGRAM (UDP, 0)
-	int server_sfd;
-	server_sfd = socket(AF_INET, SOCK_DGRAM, 0);
+	pSocket.fd = socket(AF_INET, SOCK_DGRAM, 0);
+	//int server_sfd = socket(AF_INET, SOCK_DGRAM, 0);
 
 	// define server address using sockaddr_in data structure
 	struct sockaddr_in server_addr;
@@ -72,8 +80,8 @@ int main(int argc, char **argv)
 
 	// Bind socket to address (only necessary on server end)
 	int sock_bind;
-	sock_bind = bind(server_sfd,
-					 (struct sockaddr *)&server_addr,
+	sock_bind = bind(pSocket.fd,
+					 (struct sockaddr_in *)&server_addr,
 					 sizeof(server_addr));
 
 	// Error handling
@@ -95,7 +103,7 @@ int main(int argc, char **argv)
 	while (!all_packets_recv) {
 		// receive packet (blocking)
 		int msg_size = 
-			recvfrom(server_sfd,		// int sockfd
+			recvfrom(pSocket.fd,		// int sockfd
 					&recv_pkt,			// void *buf
 					sizeof(recv_pkt),	// size_t len
 					0,					// int flags
@@ -137,7 +145,7 @@ int main(int argc, char **argv)
 		#endif
 
 		// debug info: show received string
-		#ifdef DEBUG_MSG
+		#ifdef DEBUG_MSG_F
 			printf("[server] received packet %d from %s:%d :: \"%s\"\n",
 			   recv_pkt.index, inet_ntoa(client_addr.sin_addr),
 			   ntohs(client_addr.sin_port), recv_pkt.payload);
@@ -166,10 +174,12 @@ int main(int argc, char **argv)
 
 			ack_packet_send.sequence_num = recv_pkt.index;
 
+			sleepMillisec(750);
+
 			// send ack
 			// note: gets sent to 'client_addr' not 'server_addr',
 			//       'client_addr' is the source address (i.e. return address) we got from the recvfrom() function
-			sendto( server_sfd, &ack_packet_send, 
+			sendto( pSocket.fd, &ack_packet_send, 
 				sizeof(ack_packet_send), 0, 
 				(struct sockaddr *)&client_addr, 
 				client_addrlen
@@ -219,6 +229,6 @@ int main(int argc, char **argv)
 
 	fclose(fp);
 
-	close(server_sfd);
+	close(pSocket.fd);
 	return 0;
 }

@@ -2,7 +2,7 @@
 
 #define PAYLOAD_SIZE 1024
 
-//
+
 /*
  * Data Type: packet_s
  * Alt Name: Simple Packet
@@ -20,8 +20,8 @@
  */
 typedef struct _packet_s
 {
-	// which fragment is this (integer 1-255)?
-	uint8_t index;
+	// which fragment is this (integer 0 - 65,535)?
+	uint16_t index;
 
 	// are there more fragments coming?
 	// uint8_t  incoming;
@@ -34,4 +34,15 @@ typedef struct _packet_s
 
 	// payload data
 	uint8_t payload[PAYLOAD_SIZE];
+
 } packet_s;
+
+
+typedef struct _packet_ack
+{
+	// which fragment is this (integer 0 - 65,535)?
+	uint16_t index;
+
+} packet_ack;
+
+

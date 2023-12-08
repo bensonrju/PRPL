@@ -30,13 +30,17 @@ main_client.c (main program)
 
 #include "client.h"
 
+#include <time.h>
+
 // Pointer to the array of packets to send
 packet_s *pkt_arr;
 
+/*
 struct ack_packet_s
 {
 	int sequence_num;
 };
+*/
 
 // Ack packet structure
 struct ack_packet_s ack_packet_recv;
@@ -80,9 +84,9 @@ int main(int argc, char **argv)
 	def_srv_addr_clientSide(
 		&server_addr, server_ip_addr, port_no);
 
-#ifdef DEBUG_MSG
-	printf("[client] sending packets... ");
-#endif
+	#ifdef DEBUG_MSG
+		printf("[client] sending packets... ");
+	#endif
 
 	int frame_no;
 	int ack_recv = 0;
@@ -97,21 +101,83 @@ int main(int argc, char **argv)
 		ack_recv = 0; // haven't yet received ack
 		while (!ack_recv)
 		{
+			clock_t before = clock();
+			int msec = 0, timeout = 100;
+
 			// Transmit the current packet to the appropriate address
 			sendto(client_sfd, (char *)&pkt_arr[i],
 				   packet_size, 0, (struct sockaddr *)&server_addr, sizeof(server_addr));
 
-#ifdef DEBUG_MSG
-			printf("[client] sent packet #%d to server\n", pkt_arr[i].index);
-#endif
+			#ifdef DEBUG_MSG
+				printf("[client] sent packet #%d to server\n", pkt_arr[i].index);
+			#endif
 
-			int addr_size = sizeof(server_addr);
-			int recv_size = recvfrom(client_sfd, &ack_packet_recv, sizeof(ack_packet_recv), 0, (struct sockaddr *)&server_addr, &addr_size);
+			int recv_size;
+
+			/*
+			while ( msec < timeout ) {
+				clock_t diff = clock() - before;
+				msec = diff * 1000 / CLOCKS_PER_SEC;
+
+				int addr_size = sizeof(server_addr);
+
+				recv_size = 
+					recvfrom(client_sfd, 
+							&ack_packet_recv, 
+							sizeof(ack_packet_recv), 
+							0, 
+							(struct sockaddr *)&server_addr, 
+							&addr_size
+						);
+
+				if(recv_size > 0) { break; }
+			}
+			*/
+
+			//int ack_success = 0;
+
+			start_timeout();
+
+			while (!check_timeout(100)) {
+				int addr_size = sizeof(server_addr);
+
+				recv_size = 
+					recvfrom(client_sfd, 
+							&ack_packet_recv, 
+							sizeof(ack_packet_recv), 
+							0, 
+							(struct sockaddr *)&server_addr, 
+							&addr_size
+						);
+
+				if(recv_size > 0) {
+					if (ack_packet_recv.sequence_num == frame_no) {
+						// note: the conditional here may need to slightly 
+						// 		 change when nonblocking gets implemented
+						printf("correct ack received (%d)\n", frame_no);
+
+						ack_recv = 1;
+						break;
+					}
+					// if not, loop around and resend
+					else {
+						printf("incorrect ack received (got %d, expected %d), retrying\n", 
+									ack_packet_recv.sequence_num, frame_no);
+					} 
+				}
+
+				if (!ack_recv) {
+					printf("ACK TIMEOUT!! \n");
+				}
+			}
+
+			/*
+			//int addr_size = sizeof(server_addr);
+			//int recv_size = recvfrom(client_sfd, &ack_packet_recv, sizeof(ack_packet_recv), 0, (struct sockaddr *)&server_addr, &addr_size);
 
 			// have we received the ack packet we were expecting?
 			// if yes, allow the loop to exit and move onto the next packet
-			if (ack_packet_recv.sequence_num == frame_no)
-			{
+			if (ack_packet_recv.sequence_num == frame_no) {
 				// note: the conditional here may need to slightly change when nonblocking gets implemented
 				printf("correct ack received (%d)\n", frame_no);
 
@@ -119,19 +185,20 @@ int main(int argc, char **argv)
 			}
 
 			// if not, loop around and resend
-			else
-			{
+			else {
 				printf("incorrect ack received (got %d, expected %d), retrying\n", ack_packet_recv.sequence_num, frame_no);
 			}
+			*/
 		}
-#ifdef DEBUG_MSG
-		printf("%d ", i);
-#endif
+
+		#ifdef DEBUG_MSG
+			printf("%d ", i);
+		#endif
 	}
 
-#ifdef DEBUG_MSG
-	printf(" Done. \n");
-#endif
+	#ifdef DEBUG_MSG
+		printf(" Done. \n");
+	#endif
 
 	close(client_sfd);
 	return 0;
