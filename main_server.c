@@ -81,7 +81,7 @@ int main(int argc, char **argv)
 	// Bind socket to address (only necessary on server end)
 	int sock_bind;
 	sock_bind = bind(pSocket.fd,
-					 (struct sockaddr_in *)&server_addr,
+					 (struct sockaddr *)&server_addr,
 					 sizeof(server_addr));
 
 	// Error handling
@@ -90,9 +90,9 @@ int main(int argc, char **argv)
 		exit(1);
 	}
 
-// Debug message for listening
+	// Debug message for listening
 	#ifdef DEBUG_MSG
-	printf("[server] waiting for message\n");
+		printf("[server] waiting for message\n");
 	#endif
 
 	int buf_index = 0;

@@ -42,6 +42,7 @@ typedef struct _socket_s
 
 } socket_s;
 
+/*
 void init_sock_struct()
 
 void init_socket(socket_s* sckt, mch pos) {
@@ -69,6 +70,7 @@ void init_socket(socket_s* sckt, mch pos) {
 		exit(1);
 	}
 }
+*/
 
 /* 
  * Function: def_srv_addr_clientSide
